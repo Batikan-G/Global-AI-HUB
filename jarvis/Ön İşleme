@@ -1,0 +1,40 @@
+from google.colab import drive
+drive.mount("/content/drive")
+import cv2
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import os
+from PIL import Image
+
+resimler=[]
+def OnIsleme(x):
+  folder=f"/content/drive/MyDrive/Project/spectrograms/{x}"
+  for filename in os.listdir(folder):
+        img = Image.open(os.path.join(folder,filename)).convert("L") ##grayscaling
+        img.thumbnail((32,32)) ## Resizing
+        img.save("resized_"+filename, optimize=True, quality=30)
+  images = [file for file in os.listdir() if file.endswith(('jpeg', 'png', 'jpg'))]
+  for image in images :
+    img = cv2.imread(image)
+    final_img = cv2.normalize(img,  None, 0, 1, cv2.NORM_MINMAX) ##Normalization
+    resimler.append([final_img, x])
+
+for i in range(0,10):
+  OnIsleme(i)
+
+x = [i[0] for i in resimler]
+y = [i[1] for i in resimler]
+
+# Import Label Encoder and train_test_split
+from sklearn.preprocessing import LabelEncoder, minmax_scale
+from sklearn.model_selection import train_test_split
+x_train, x_temporary, y_train, y_temporary = train_test_split(x, y, train_size= 0.8)
+x_val, x_test, y_val, y_test=train_test_split(x_temporary, y_temporary, train_size= 0.5)
+
+import numpy as np
+np.save("/content/drive/MyDrive/Project/data.npy", x_train)
+np.save("/content/drive/MyDrive/Project/data2.npy", y_train)
+np.save("/content/drive/MyDrive/Project/data3.npy", x_test)
+np.save("/content/drive/MyDrive/Project/data4.npy", y_test)
+np.save("/content/drive/MyDrive/Project/data5.npy", x_val)
+np.save("/content/drive/MyDrive/Project/data6.npy", y_val)
