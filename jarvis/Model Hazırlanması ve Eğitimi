@@ -1,0 +1,74 @@
+import pandas as pd
+from google.colab import drive
+drive.mount("/content/drive")
+
+import numpy as np
+x_train = np.load("/content/drive/MyDrive/Project 1/data.npy")
+y_train = np.load("/content/drive/MyDrive/Project 1/data2.npy")
+x_test = np.load("/content/drive/MyDrive/Project 1/data3.npy")
+y_test = np.load("/content/drive/MyDrive/Project 1/data4.npy")
+x_val = np.load("/content/drive/MyDrive/Project 1/data5.npy")
+y_val = np.load("/content/drive/MyDrive/Project 1/data6.npy")
+
+# Import TensorFlow
+import tensorflow as tf
+
+model =tf.keras.Sequential()
+
+model.add(tf.keras.layers.Conv2D(64,(3,3),1,activation="relu", input_shape=(24,32,3))) #16 katmanlı, 3*3 boyutlu, 1 ise stride yani kaç piksel ilerleyeceği, relu aktivasyon fonksiyonuna sahip bu sayede non-lineer özellik kazanıyor
+model.add(tf.keras.layers.MaxPooling2D())
+
+model.add(tf.keras.layers.Conv2D(64,(3,3),1,activation="relu"))
+model.add(tf.keras.layers.MaxPooling2D())
+
+model.add(tf.keras.layers.Conv2D(64,(3,3),1,activation="relu"))
+model.add(tf.keras.layers.MaxPooling2D())
+
+model.add(tf.keras.layers.Flatten())
+
+model.add(tf.keras.layers.Dense(256,activation="relu")) # 256 nörona sahip bir katman
+model.add(tf.keras.layers.Dense(1,activation="softmax")) # İşlemler sonucunda ortaya çıkan output, 0 ya da 1 olmalı; sigmoid aktivasyon fonksiyonu kullanıyor
+
+model.compile(optimizer="adam",
+              loss = "sparse_categorical_crossentropy",
+              metrics = ["accuracy"])
+
+results= model.fit(x_train, y_train, epochs=50, validation_data=(x_val, y_val))
+
+import matplotlib.pyplot as plt
+# Plot the the training loss
+plt.plot(results.history["loss"], label ="loss")
+
+# Plot the the validation loss
+plt.plot(results.history["val_loss"], label ="val_loss")
+
+# Name the x and y axises
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+
+# Put legend table
+plt.legend()
+
+# Show the plot
+plt.show()
+
+# Plot the the training accuracy
+plt.plot(results.history["accuracy"], label ="accuracy")
+
+# Plot the the validation accuracy
+plt.plot(results.history["val_accuracy"], label ="val_accuracy")
+
+# Name the x and y axises
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+
+# Put legend table
+plt.legend()
+
+# Show the plot
+plt.show()
+
+model.evaluate(x_test, y_test)
+
+prediction_result=model.predict(x_test[1].reshape(1,24,32,3))
+prediction_result
